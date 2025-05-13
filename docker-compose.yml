@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: nominal-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    volumes:
+      - .:/app
+    environment:
+      - QUICKBOOKS_CLIENT_ID=${QUICKBOOKS_CLIENT_ID}
+      - QUICKBOOKS_CLIENT_SECRET=${QUICKBOOKS_CLIENT_SECRET}
+      - QUICKBOOKS_REDIRECT_URI=${QUICKBOOKS_REDIRECT_URI}
+      - QUICKBOOKS_SANDBOX_URL=${QUICKBOOKS_SANDBOX_URL}
+      - QUICKBOOKS_AUTH_URL=${QUICKBOOKS_AUTH_URL}
+      - QUICKBOOKS_TOKEN_URL=${QUICKBOOKS_TOKEN_URL}
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/quickbooks
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=quickbooks
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d quickbooks']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
