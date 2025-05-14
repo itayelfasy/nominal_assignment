@@ -1,8 +1,9 @@
+"""Main application module."""
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import api_router, auth_router
+from app.api.routes import router
 
 app = FastAPI(
     title="Nominal QuickBooks Integration",
@@ -21,9 +22,7 @@ app.add_middleware(
 )
 
 # Include API routes
-app.include_router(auth_router)  # No prefix for auth routes
-app.include_router(api_router, prefix="/api")
-
+app.include_router(router)
 
 @app.get("/")
 async def root():
@@ -36,7 +35,6 @@ async def root():
             "accounts": "/api/accounts"
         }
     }
-
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8080, reload=True)
