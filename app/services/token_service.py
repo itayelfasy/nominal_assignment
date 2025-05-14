@@ -1,6 +1,6 @@
 """Token service for managing QuickBooks authentication tokens."""
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Dict, Optional
 
 from sqlalchemy.orm import Session
@@ -45,7 +45,7 @@ class TokenService:
             token_type=tokens.token_type,
             expires_in=tokens.expires_in,
             x_refresh_token_expires_in=tokens.x_refresh_token_expires_in,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
 
         # Update if exists, insert if not
@@ -87,7 +87,7 @@ class TokenService:
             return None
 
         # Check if token is expired
-        token_age = datetime.utcnow() - db_token.created_at
+        token_age = datetime.now(UTC) - db_token.created_at
         if token_age > timedelta(seconds=db_token.expires_in):
             try:
                 # Refresh token
@@ -99,7 +99,7 @@ class TokenService:
                 db_token.token_type = new_tokens.token_type
                 db_token.expires_in = new_tokens.expires_in
                 db_token.x_refresh_token_expires_in = new_tokens.x_refresh_token_expires_in
-                db_token.created_at = datetime.utcnow()
+                db_token.created_at = datetime.now(UTC)
                 db.commit()
 
                 return new_tokens.access_token
