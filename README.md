@@ -10,14 +10,7 @@ API for integrating with QuickBooks Online using OAuth 2.0 authentication.
 
 ## Setup
 
-1. Clone the repository:
-
-```bash
-git clone <repository-url>
-cd nominal
-```
-
-2. Create a `.env` file in the root directory with your QuickBooks credentials:
+1. Create a `.env` file in the root directory with your QuickBooks credentials:
 
 ```env
 QUICKBOOKS_CLIENT_ID=your_client_id
@@ -31,7 +24,7 @@ QUICKBOOKS_STATE=random_state
 QUICKBOOKS_SANDBOX_REALM_ID=your_sandbox_realm_id
 ```
 
-3. Start the application using Docker Compose:
+2. Start the application using Docker Compose:
 
 ```bash
 docker-compose up --build
