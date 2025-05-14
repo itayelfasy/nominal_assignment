@@ -6,21 +6,26 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.config import get_settings
 from app.services.account_service import AccountService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["accounts"])
+settings = get_settings()
 
 @router.get("/accounts")
 async def get_accounts(
-    realm_id: str,
+    realm_id: str = Query(
+        default=settings.QUICKBOOKS_SANDBOX_REALM_ID,
+        description="QuickBooks company realm ID (defaults to sandbox realm ID)"
+    ),
     name_prefix: Optional[str] = Query(None, description="Filter accounts by name prefix"),
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     """Retrieve accounts from QuickBooks.
     
     Args:
-        realm_id: QuickBooks company realm ID.
+        realm_id: QuickBooks company realm ID (defaults to sandbox realm ID).
         name_prefix: Optional filter for account names.
         db: Database session.
         

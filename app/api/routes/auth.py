@@ -2,15 +2,17 @@
 import logging
 from typing import Dict
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.config import get_settings
 from app.services.token_service import TokenService
 from app.services.quickbooks_service import QuickBooksService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["auth"])
+settings = get_settings()
 
 @router.get("/quickbooks")
 async def quickbooks_auth() -> Dict[str, str]:
@@ -25,14 +27,17 @@ async def quickbooks_auth() -> Dict[str, str]:
 @router.get("/callback")
 async def quickbooks_callback(
     code: str,
-    realm_id: str,
+    realm_id: str = Query(
+        default=settings.QUICKBOOKS_SANDBOX_REALM_ID,
+        description="QuickBooks company realm ID (defaults to sandbox realm ID)"
+    ),
     db: Session = Depends(get_db)
 ) -> Dict[str, str]:
     """Handle OAuth callback from QuickBooks.
     
     Args:
         code: Authorization code from QuickBooks.
-        realm_id: QuickBooks company realm ID.
+        realm_id: QuickBooks company realm ID (defaults to sandbox realm ID).
         db: Database session.
         
     Returns:

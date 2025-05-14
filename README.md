@@ -57,9 +57,11 @@ The application will be available at `http://localhost:8080`
 ### 2. Accessing QuickBooks Data
 
 1. **Get Accounts**:
-   - Endpoint: `GET http://localhost:8080/api/accounts?realm_id=YOUR_REALM_ID`
-   - Optional: Add `name_prefix` parameter to filter accounts
-   - Example: `http://localhost:8080/api/accounts?realm_id=YOUR_REALM_ID&name_prefix=Bank`
+   - Endpoint: `GET http://localhost:8080/accounts/accounts`
+   - Optional parameters:
+     - `realm_id`: QuickBooks company realm ID (defaults to sandbox realm ID)
+     - `name_prefix`: Filter accounts by name prefix
+   - Example: `http://localhost:8080/accounts/accounts?name_prefix=Bank`
 
 ### Important Notes
 
@@ -67,6 +69,7 @@ The application will be available at `http://localhost:8080`
 - Data is persisted using Docker volumes
 - The database is automatically initialized on first run
 - Tokens are automatically refreshed when expired
+- By default, the API uses the sandbox realm ID for testing
 
 ## Development
 
@@ -103,15 +106,22 @@ docker-compose down -v
 ├── app/
 │   ├── api/
 │   │   ├── __init__.py
-│   │   ├── routes.py
-│   │   └── quickbooks.py
+│   │   └── routes/
+│   │       ├── __init__.py
+│   │       ├── auth.py
+│   │       └── accounts.py
 │   ├── core/
 │   │   ├── __init__.py
-│   │   ├── config.py
-│   │   └── security.py
+│   │   └── config.py
 │   ├── models/
 │   │   ├── __init__.py
-│   │   └── token.py
+│   │   ├── token.py
+│   │   └── database.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── account_service.py
+│   │   ├── token_service.py
+│   │   └── quickbooks_service.py
 │   └── main.py
 ├── .env
 ├── requirements.txt
@@ -149,23 +159,27 @@ uvicorn app.main:app --reload
 ### OAuth Flow
 
 - `GET /auth/quickbooks`: Initiates the OAuth flow with QuickBooks
-- `GET /callback`: Handles the OAuth callback from QuickBooks
+- `GET /auth/callback`: Handles the OAuth callback from QuickBooks
 
 ### Accounts
 
-- `GET /api/accounts`: Retrieves all accounts
-- `GET /api/accounts?name_prefix={prefix}`: Retrieves accounts filtered by name prefix
+- `GET /accounts/accounts`: Retrieves all accounts
+  - Optional: `realm_id` (defaults to sandbox realm ID)
+  - Optional: `name_prefix` to filter accounts by name prefix
 
 ## Testing
 
 The API can be tested using tools like Postman or curl. Example:
 
 ```bash
-# Get all accounts
-curl http://localhost:8080/api/accounts
+# Get all accounts (using sandbox realm ID)
+curl http://localhost:8080/accounts/accounts
 
 # Get accounts with name prefix
-curl http://localhost:8080/api/accounts?name_prefix=Bank
+curl http://localhost:8080/accounts/accounts?name_prefix=Bank
+
+# Get accounts for specific realm ID
+curl http://localhost:8080/accounts/accounts?realm_id=YOUR_REALM_ID
 ```
 
 ## Author
