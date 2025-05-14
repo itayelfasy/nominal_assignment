@@ -87,7 +87,10 @@ class TokenService:
             return None
 
         # Check if token is expired
-        token_age = datetime.now(UTC) - db_token.created_at
+        current_time = datetime.now(UTC)
+        token_created_at = db_token.created_at.replace(tzinfo=UTC)
+        token_age = current_time - token_created_at
+        
         if token_age > timedelta(seconds=db_token.expires_in):
             try:
                 # Refresh token
